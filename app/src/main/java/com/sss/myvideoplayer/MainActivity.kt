@@ -2,47 +2,36 @@ package com.sss.myvideoplayer
 
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
-import android.media.AudioManager
-import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
-import android.view.SurfaceHolder
-import android.view.SurfaceView
 import android.view.View
 import android.view.WindowManager
 import android.widget.MediaController
 import android.widget.Toast
+import android.widget.VideoView
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
-import java.io.IOException
 
 
-class MainActivity : AppCompatActivity(), View.OnClickListener, SurfaceHolder.Callback,
-    MediaPlayer.OnPreparedListener {
+class MainActivity : AppCompatActivity(), View.OnClickListener {
 
     private var videolist: ArrayList<Int> = ArrayList()
     private var mediaController: MediaController? = null
     private var isVideoPaused: Boolean = false
     private var stopPosition: Int? = null
 
-    private lateinit var surfaceView: SurfaceView
-    private lateinit var surfaceHolder: SurfaceHolder
-    private lateinit var mediaPlayer: MediaPlayer
+    private lateinit var videoView: VideoView
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        surfaceView = findViewById(R.id.surface_view)
-        surfaceHolder = surfaceView.holder
-
-        surfaceView.keepScreenOn = true
-
+        videoView = findViewById(R.id.video_view)
 
         mediaController = MediaController(this)
-    //    mediaController!!.setMediaPlayer(surfaceView)
+        mediaController!!.setMediaPlayer(videoView)
 
         fast_forward_button.setOnClickListener(this)
         fast_back_button.setOnClickListener(this)
@@ -54,30 +43,16 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, SurfaceHolder.Ca
         videolist.add(R.raw.video1)
         videolist.add(R.raw.video1)
 
-        surfaceHolder.addCallback(this)
+        setVideo(videolist[0])
 
     }
 
     private fun initializeVideoPlayer() {
-      //  surfaceView.setVideoURI(Uri.parse(setVideo(videolist[0])))
+        videoView.setVideoURI(Uri.parse(setVideo(videolist[0])))
     }
 
     private fun releaseVideoPlayer() {
-        if(mediaPlayer != null){
-            mediaPlayer.release()
-        }
-      //  surfaceView.stopPlayback()
-    }
-
-
-    override fun onPause() {
-        super.onPause()
-        releaseVideoPlayer()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        releaseVideoPlayer()
+        videoView.stopPlayback()
     }
 
 
@@ -91,7 +66,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, SurfaceHolder.Ca
         super.onStart()
 
         initializeVideoPlayer()
-     //   surfaceView.start()
+        videoView.start()
     }
 
     override fun onStop() {
@@ -121,7 +96,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, SurfaceHolder.Ca
 
             R.id.fast_back_button -> {
 
-              //  surfaceView.seekTo(surfaceView.currentPosition - 10000)
+                videoView.seekTo(videoView.currentPosition - 10000)
 
                 iniateAllButton()
 
@@ -131,7 +106,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, SurfaceHolder.Ca
             }
             R.id.fast_forward_button -> {
 
-            //    surfaceView.seekTo(surfaceView.currentPosition + 10000)
+                videoView.seekTo(videoView.currentPosition + 10000)
 
                 iniateAllButton()
 
@@ -139,11 +114,11 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, SurfaceHolder.Ca
 
             }
             R.id.play_button -> {
-             //   surfaceView.resume()
+                videoView.resume()
 
-           //     stopPosition?.let { surfaceView.seekTo(it) }
+                stopPosition?.let { videoView.seekTo(it) }
 
-              //  surfaceView.start()
+                videoView.start()
 
                 play_button.visibility = View.GONE
                 pause_button.visibility = View.VISIBLE
@@ -151,9 +126,9 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, SurfaceHolder.Ca
                 isVideoPaused = false
             }
             R.id.pause_button -> {
-            //    surfaceView.pause()
+                videoView.pause()
 
-             //   stopPosition = surfaceView.currentPosition
+                stopPosition = videoView.currentPosition
 
                 isVideoPaused = true
 
@@ -190,7 +165,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, SurfaceHolder.Ca
     }
 
 
-    /*override fun onConfigurationChanged(newConfig: Configuration) {
+    override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
 
         // Checks the orientation of the screen
@@ -199,31 +174,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, SurfaceHolder.Ca
         } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
             window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
         }
-    }
-*/
-    override fun surfaceChanged(p0: SurfaceHolder?, p1: Int, p2: Int, p3: Int) {
-
-    }
-
-    override fun surfaceDestroyed(p0: SurfaceHolder?) {
-    }
-
-    override fun surfaceCreated(holder: SurfaceHolder?) {
-        mediaPlayer = MediaPlayer()
-        mediaPlayer.setDisplay(holder)
-        try {
-            mediaPlayer.setDataSource("http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4")
-            mediaPlayer.prepareAsync()
-            mediaPlayer.setOnPreparedListener(this)
-            mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC)
-        }catch (e:IOException){
-            e.printStackTrace()
-        }
-
-    }
-
-    override fun onPrepared(p0: MediaPlayer?) {
-       mediaPlayer.start()
     }
 
 
